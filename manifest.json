@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "andy.language-switcher",
+  "name": "Language Switcher",
+  "version": "1.0.0",
+  "author": "Andy",
+  "license": "GPL-3.0-only",
+  "description": "Search supported system languages and change the system locale.",
+  "kinds": ["service", "bar-widget"],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Language Switcher",
+    "description": "Search and change the system language.",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
