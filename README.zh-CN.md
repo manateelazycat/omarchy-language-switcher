@@ -20,7 +20,9 @@ cd omarchy-language-switcher
 ./install.sh
 ```
 
-安装脚本将项目目录链接到 `~/.config/omarchy/plugins/andy.language-switcher`，备份 `shell.json`，启用插件并把图标加入任务栏右侧。项目目录需要保留在原位置。
+请以普通用户运行安装脚本。脚本会通过 `sudo` 将可执行 helper 安装到 `/usr/local/libexec/omarchy-language-switcher-helper`，文件归 root 所有、权限为 `0755`。插件读取语言列表和切换语言时都使用这份安装后的文件；管理员授权不会执行用户可写的项目克隆目录中的代码。
+
+安装脚本还会把项目目录链接到 `~/.config/omarchy/plugins/andy.language-switcher`，备份 `shell.json`，启用插件并把图标加入任务栏右侧。项目目录需要保留在原位置。更新项目代码后，请重新运行 `./install.sh` 更新系统中的 helper。
 
 ## 使用
 
@@ -29,14 +31,14 @@ cd omarchy-language-switcher
 ## 卸载
 
 ```bash
-omarchy plugin remove andy.language-switcher --yes
+./uninstall.sh
 ```
 
-本地项目目录不会被删除。
+卸载脚本会移除 Omarchy 插件链接，并通过 `sudo` 删除 root 拥有的 helper。本地项目目录不会被删除。
 
 ## 运行要求
 
-Omarchy Shell、Hyprland、Python 3、`locale-gen`、`localectl`、`pkexec`，以及可用的 Polkit 图形授权代理。安装脚本还使用 `jq`。语言资源是否完整取决于已安装的软件翻译包。
+Omarchy Shell、Hyprland、Python 3、`locale-gen`、`localectl`、`pkexec`、`sudo`，以及可用的 Polkit 图形授权代理。安装脚本还使用 `jq`。语言资源是否完整取决于已安装的软件翻译包。
 
 ## 协议
 

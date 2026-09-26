@@ -27,7 +27,9 @@ cd omarchy-language-switcher
 ./install.sh
 ```
 
-The installer links this directory to `~/.config/omarchy/plugins/andy.language-switcher`, backs up `shell.json`, enables the plugin, and adds its icon to the right side of the bar. Keep the cloned directory in place.
+Run the installer as your normal user. It asks for `sudo` authorization to install the executable helper at `/usr/local/libexec/omarchy-language-switcher-helper` with root ownership and mode `0755`. The plugin runs this installed copy for both listing and applying locales; the user-writable clone is never executed with administrator privileges.
+
+The installer also links this directory to `~/.config/omarchy/plugins/andy.language-switcher`, backs up `shell.json`, enables the plugin, and adds its icon to the right side of the bar. Keep the cloned directory in place. Run `./install.sh` again after updating the clone to update the installed helper.
 
 ## Use
 
@@ -36,14 +38,14 @@ Click the language icon in the bar or run `omarchy-shell andy.language-switcher 
 ## Remove
 
 ```bash
-omarchy plugin remove andy.language-switcher --yes
+./uninstall.sh
 ```
 
-Your local clone is not deleted.
+The uninstaller removes the Omarchy plugin link and uses `sudo` to remove the root-owned helper. Your local clone is not deleted.
 
 ## Requirements
 
-Omarchy Shell, Hyprland, Python 3, `locale-gen`, `localectl`, `pkexec`, and a graphical Polkit authentication agent. The installer also uses `jq`. Available translations depend on the language packs installed on your system.
+Omarchy Shell, Hyprland, Python 3, `locale-gen`, `localectl`, `pkexec`, `sudo`, and a graphical Polkit authentication agent. The installer also uses `jq`. Available translations depend on the language packs installed on your system.
 
 ## License
 

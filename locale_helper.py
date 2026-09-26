@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3 -I
 """List UTF-8 locales, then safely generate and activate one with polkit."""
 
 import json
@@ -138,7 +138,7 @@ def main(argv):
         apply_locale(argv[1])
         print(json.dumps({"ok": True, "code": argv[1]}))
         return 0
-    print("用法：locale_helper.py list | apply <locale>", file=sys.stderr)
+    print("用法：omarchy-language-switcher-helper list | apply <locale>", file=sys.stderr)
     return 2
 
 

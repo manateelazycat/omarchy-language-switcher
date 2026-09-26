@@ -21,11 +21,7 @@ Item {
   property int selectedIndex: 0
   property var entries: []
   property var filtered: []
-  readonly property string helperPath: {
-    var url = String(Qt.resolvedUrl("locale_helper.py"))
-    try { return decodeURIComponent(url.replace(/^file:\/\//, "")) }
-    catch (error) { return url.replace(/^file:\/\//, "") }
-  }
+  readonly property string helperPath: "/usr/local/libexec/omarchy-language-switcher-helper"
 
   function rebuild() {
     filtered = Languages.filter(entries, query)
@@ -67,7 +63,7 @@ Item {
     opened = false
     busy = true
     showNotice("正在切换到 " + entry.title + "…", false, false)
-    applyProcess.command = ["pkexec", "/usr/bin/python3", helperPath, "apply", entry.code]
+    applyProcess.command = ["/usr/bin/pkexec", helperPath, "apply", entry.code]
     applyProcess.running = true
   }
 
@@ -75,7 +71,7 @@ Item {
 
   Process {
     id: listProcess
-    command: ["/usr/bin/python3", root.helperPath, "list"]
+    command: [root.helperPath, "list"]
     stdout: StdioCollector { id: listOutput; waitForEnd: true }
     stderr: StdioCollector { id: listError; waitForEnd: true }
     onExited: function(exitCode) {
