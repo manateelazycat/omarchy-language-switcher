@@ -27,9 +27,11 @@ cd omarchy-language-switcher
 ./install.sh
 ```
 
-Run the installer as your normal user. It asks for `sudo` authorization to install the executable helper at `/usr/local/libexec/omarchy-language-switcher-helper` with root ownership and mode `0755`. The plugin runs this installed copy for both listing and applying locales; the user-writable clone is never executed with administrator privileges.
+Run the installer as your normal user. It asks for `sudo` authorization to install the executable helper at `/usr/local/libexec/omarchy-language-switcher-helper` with root ownership and mode `0755`. It also installs a root-owned `.receipt` file containing the helper's SHA-256 digest. The plugin runs the installed helper for both listing and applying locales; the user-writable clone is never executed with administrator privileges.
 
 The installer also links this directory to `~/.config/omarchy/plugins/andy.language-switcher`, backs up `shell.json`, enables the plugin, and adds its icon to the right side of the bar. Keep the cloned directory in place. Run `./install.sh` again after updating the clone to update the installed helper.
+
+If the helper path already exists without a matching receipt, installation stops before replacing it. This includes installations made before the receipt was introduced. For the earlier `1205894` release, the helper's SHA-256 digest is `a1a646f110f96b12f5514b6635c0221efdf67b22d0caea3e89eb3798eb17bb13`. If you installed that release, confirm the file's digest with `sha256sum /usr/local/libexec/omarchy-language-switcher-helper`, then remove that verified old helper with `sudo rm -- /usr/local/libexec/omarchy-language-switcher-helper` and rerun `./install.sh`. If the digest differs or the file's origin is uncertain, inspect it before removing it. The installer never adopts or overwrites an unrecorded file automatically.
 
 ## Use
 
@@ -41,7 +43,7 @@ Click the language icon in the bar or run `omarchy-shell andy.language-switcher 
 ./uninstall.sh
 ```
 
-The uninstaller removes the Omarchy plugin link and uses `sudo` to remove the root-owned helper. Your local clone is not deleted.
+The uninstaller removes the Omarchy plugin link and uses `sudo` to remove the root-owned helper and its receipt. It refuses to remove a helper without a matching receipt or one whose content has changed. Your local clone is not deleted.
 
 ## Requirements
 

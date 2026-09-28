@@ -20,9 +20,11 @@ cd omarchy-language-switcher
 ./install.sh
 ```
 
-请以普通用户运行安装脚本。脚本会通过 `sudo` 将可执行 helper 安装到 `/usr/local/libexec/omarchy-language-switcher-helper`，文件归 root 所有、权限为 `0755`。插件读取语言列表和切换语言时都使用这份安装后的文件；管理员授权不会执行用户可写的项目克隆目录中的代码。
+请以普通用户运行安装脚本。脚本会通过 `sudo` 将可执行 helper 安装到 `/usr/local/libexec/omarchy-language-switcher-helper`，文件归 root 所有、权限为 `0755`；同时写入 root 拥有的 `.receipt` 文件，记录 helper 的 SHA-256 摘要。插件读取语言列表和切换语言时都使用这份安装后的文件；管理员授权不会执行用户可写的项目克隆目录中的代码。
 
 安装脚本还会把项目目录链接到 `~/.config/omarchy/plugins/andy.language-switcher`，备份 `shell.json`，启用插件并把图标加入任务栏右侧。项目目录需要保留在原位置。更新项目代码后，请重新运行 `./install.sh` 更新系统中的 helper。
+
+如果 helper 路径已有文件，却没有匹配的安装记录，安装脚本会拒绝覆盖。这也适用于新增安装记录之前的旧版本。`1205894` 版本 helper 的 SHA-256 摘要是 `a1a646f110f96b12f5514b6635c0221efdf67b22d0caea3e89eb3798eb17bb13`。如果你安装过该版本，先用 `sha256sum /usr/local/libexec/omarchy-language-switcher-helper` 核对摘要，再用 `sudo rm -- /usr/local/libexec/omarchy-language-switcher-helper` 删除已确认的旧 helper，最后重新运行 `./install.sh`。如果摘要不同或不确定文件来源，请先查明情况，不要删除。安装脚本不会自动接管或覆盖没有记录的文件。
 
 ## 使用
 
@@ -34,7 +36,7 @@ cd omarchy-language-switcher
 ./uninstall.sh
 ```
 
-卸载脚本会移除 Omarchy 插件链接，并通过 `sudo` 删除 root 拥有的 helper。本地项目目录不会被删除。
+卸载脚本会移除 Omarchy 插件链接，并通过 `sudo` 删除 root 拥有的 helper 和安装记录。对于没有匹配记录或内容已变化的 helper，卸载脚本会拒绝删除。本地项目目录不会被删除。
 
 ## 运行要求
 
