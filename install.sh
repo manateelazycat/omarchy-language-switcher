@@ -90,7 +90,27 @@ fi
 
 shell_config="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/shell.json"
 if [[ -f "$shell_config" ]]; then
-  cp -p -- "$shell_config" "$shell_config.bak.language-switcher.$(date +%Y%m%d%H%M%S)"
+  # mkstemp creates a unique backup exclusively; copy through its open file
+  # descriptor so an existing path or symlink is never followed or replaced.
+  python3 - "$shell_config" <<'PY'
+from datetime import datetime
+import os
+from pathlib import Path
+import shutil
+import stat
+import sys
+import tempfile
+
+config = Path(sys.argv[1])
+with config.open("rb") as source:
+    metadata = os.fstat(source.fileno())
+    prefix = f"{config.name}.bak.language-switcher.{datetime.now():%Y%m%d%H%M%S}."
+    backup_fd, _ = tempfile.mkstemp(prefix=prefix, dir=config.parent)
+    with os.fdopen(backup_fd, "wb") as backup:
+        shutil.copyfileobj(source, backup)
+        os.fchmod(backup.fileno(), stat.S_IMODE(metadata.st_mode))
+        os.utime(backup.fileno(), ns=(metadata.st_atime_ns, metadata.st_mtime_ns))
+PY
 fi
 omarchy plugin enable andy.language-switcher
 omarchy bar move andy.language-switcher --section right

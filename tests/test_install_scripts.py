@@ -61,6 +61,7 @@ fi
 """)
         self.stub(bin_dir, "omarchy-shell", "exit 0")
         self.stub(bin_dir, "jq", "cat >/dev/null")
+        self.stub(bin_dir, "date", "echo 20260928123456")
         self.env = os.environ.copy()
         self.env["PATH"] = f"{bin_dir}:{self.env['PATH']}"
         self.env["XDG_CONFIG_HOME"] = str(self.root / "config")
@@ -88,21 +89,48 @@ fi
             self.assertFalse(self.receipt.exists())
 
     def test_install_update_and_uninstall_owned_helper(self):
+        config = self.root / "config" / "omarchy" / "shell.json"
+        config.parent.mkdir(parents=True)
+        config.write_text('{"bar": []}\n')
         result = self.run_script("install.sh")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.helper.read_bytes(), (self.project / "locale_helper.py").read_bytes())
         self.assertTrue(self.receipt.exists())
+        backups = list(config.parent.glob("shell.json.bak.language-switcher.*"))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(backups[0].read_bytes(), config.read_bytes())
 
         with (self.project / "locale_helper.py").open("a") as source:
             source.write("\n# updated\n")
         result = self.run_script("install.sh")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.helper.read_bytes(), (self.project / "locale_helper.py").read_bytes())
+        backups = list(config.parent.glob("shell.json.bak.language-switcher.*"))
+        self.assertEqual(len(backups), 2)
+        self.assertTrue(all(path.read_bytes() == config.read_bytes() for path in backups))
 
         result = self.run_script("uninstall.sh")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(self.helper.exists())
         self.assertFalse(self.receipt.exists())
+
+    def test_existing_backup_symlink_is_not_followed(self):
+        config = self.root / "config" / "omarchy" / "shell.json"
+        config.parent.mkdir(parents=True)
+        config.write_text('{"bar": []}\n')
+        target = self.root / "other-user-file"
+        target.write_text("keep this content\n")
+        legacy_backup = config.parent / "shell.json.bak.language-switcher.20260928123456"
+        legacy_backup.symlink_to(target)
+
+        result = self.run_script("install.sh")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(legacy_backup.is_symlink())
+        self.assertEqual(target.read_text(), "keep this content\n")
+        backups = [path for path in config.parent.glob("shell.json.bak.language-switcher.*")
+                   if path != legacy_backup]
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(backups[0].read_bytes(), config.read_bytes())
 
     def test_modified_owned_helper_is_preserved(self):
         result = self.run_script("install.sh")
