@@ -14,7 +14,11 @@ BarWidget {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: "󰗊"
+    iconComponent: Component {
+      LanguageIcon {
+        color: button.active && button.useActiveColor ? button.activeColor : button.foreground
+      }
+    }
     active: root.languageService ? root.languageService.opened : false
     tooltipText: "切换系统语言"
     onPressed: function(mouseButton) {
