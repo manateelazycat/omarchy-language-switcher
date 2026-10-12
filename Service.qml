@@ -3,8 +3,8 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
-import qs.Commons
-import qs.Ui
+import qs.Commons as Commons
+import "CompatUi" as LanguageUi
 import "Languages.js" as Languages
 
 Item {
@@ -146,39 +146,41 @@ Item {
         id: scrim
         anchors.fill: parent
         visible: root.opened
-        color: Color.menu.scrim
+        color: Commons.Color.menu.scrim
         MouseArea { anchors.fill: parent; onClicked: root.close() }
       }
 
       Rectangle {
         id: card
-        width: Math.min(Style.space(520), panel.width - Style.gapsOut * 2)
-        height: Math.min(Style.space(512), panel.height - Style.gapsOut * 2)
+        objectName: "languageSwitcherCard"
+        width: Math.min(Commons.Style.space(520), panel.width - Commons.Style.gapsOut * 2)
+        height: Math.min(Commons.Style.space(512), panel.height - Commons.Style.gapsOut * 2)
         anchors.centerIn: parent
         visible: root.opened
-        radius: Style.cornerRadius
-        color: Color.menu.background
-        border.color: Color.menu.border
+        radius: Commons.Style.cornerRadius
+        color: Commons.Color.menu.background
+        border.color: Commons.Color.menu.border
         border.width: 1
 
         MouseArea { anchors.fill: parent; onClicked: {} }
 
         Column {
           anchors.fill: parent
-          anchors.margins: Style.spacing.panelPadding
-          spacing: Style.spacing.md
+          anchors.margins: Commons.Style.spacing.panelPadding
+          spacing: Commons.Style.spacing.md
 
           Text {
             text: "切换系统语言"
             textFormat: Text.PlainText
-            color: Color.menu.text
-            font.family: Style.font.menuFamily
-            font.pixelSize: Style.font.title
+            color: Commons.Color.menu.text
+            font.family: Commons.Style.font.menuFamily
+            font.pixelSize: Commons.Style.font.title
             font.bold: true
           }
 
-          TextField {
+          LanguageUi.TextField {
             id: searchField
+            objectName: "languageSwitcherSearch"
             width: parent.width
             text: root.query
             placeholderText: "搜索语言名称或 locale 代码…"
@@ -200,10 +202,10 @@ Item {
           Text {
             text: root.filtered.length + " 种语言/地区  ·  ↑↓ 选择  ·  Enter 切换  ·  Esc 关闭"
             textFormat: Text.PlainText
-            color: Color.menu.text
+            color: Commons.Color.menu.text
             opacity: 0.62
-            font.family: Style.font.menuFamily
-            font.pixelSize: Style.font.caption
+            font.family: Commons.Style.font.menuFamily
+            font.pixelSize: Commons.Style.font.caption
           }
 
           ListView {
@@ -212,7 +214,7 @@ Item {
             height: Math.max(0, parent.height - y)
             model: root.filtered
             clip: true
-            spacing: Style.spacing.xs
+            spacing: Commons.Style.spacing.xs
             boundsBehavior: Flickable.StopAtBounds
             currentIndex: root.selectedIndex
             onCurrentIndexChanged: if (currentIndex >= 0) positionViewAtIndex(currentIndex, ListView.Contain)
@@ -220,28 +222,29 @@ Item {
 
             delegate: Rectangle {
               id: row
+              objectName: "languageSwitcherRow" + index
               required property int index
               required property var modelData
               width: ListView.view.width
-              height: Style.space(53)
-              radius: Style.cornerRadius
-              color: index === root.selectedIndex ? Color.menu.selectedBackground : "transparent"
-              border.color: index === root.selectedIndex ? Color.menu.selectedBorder : "transparent"
+              height: Commons.Style.space(53)
+              radius: Commons.Style.cornerRadius
+              color: index === root.selectedIndex ? Commons.Color.menu.selectedBackground : "transparent"
+              border.color: index === root.selectedIndex ? Commons.Color.menu.selectedBorder : "transparent"
               border.width: index === root.selectedIndex ? 1 : 0
 
               Column {
                 anchors.left: parent.left
                 anchors.right: statusLabel.left
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: Style.spacing.md
+                anchors.leftMargin: Commons.Style.spacing.md
                 spacing: 2
 
                 Text {
                   text: row.modelData.title
                   textFormat: Text.PlainText
-                  color: row.index === root.selectedIndex ? Color.menu.selectedText : Color.menu.text
-                  font.family: Style.font.menuFamily
-                  font.pixelSize: Style.font.body
+                  color: row.index === root.selectedIndex ? Commons.Color.menu.selectedText : Commons.Color.menu.text
+                  font.family: Commons.Style.font.menuFamily
+                  font.pixelSize: Commons.Style.font.body
                   font.bold: row.index === root.selectedIndex
                   elide: Text.ElideRight
                   width: parent.width
@@ -249,10 +252,10 @@ Item {
                 Text {
                   text: row.modelData.subtitle + "  ·  " + row.modelData.code
                   textFormat: Text.PlainText
-                  color: row.index === root.selectedIndex ? Color.menu.selectedText : Color.menu.text
+                  color: row.index === root.selectedIndex ? Commons.Color.menu.selectedText : Commons.Color.menu.text
                   opacity: 0.64
-                  font.family: Style.font.menuFamily
-                  font.pixelSize: Style.font.caption
+                  font.family: Commons.Style.font.menuFamily
+                  font.pixelSize: Commons.Style.font.caption
                   elide: Text.ElideRight
                   width: parent.width
                 }
@@ -261,14 +264,14 @@ Item {
               Text {
                 id: statusLabel
                 anchors.right: parent.right
-                anchors.rightMargin: Style.spacing.md
+                anchors.rightMargin: Commons.Style.spacing.md
                 anchors.verticalCenter: parent.verticalCenter
                 text: row.modelData.active ? "当前" : (row.modelData.installed ? "已安装" : "")
                 textFormat: Text.PlainText
-                color: row.index === root.selectedIndex ? Color.menu.selectedText : Color.menu.text
+                color: row.index === root.selectedIndex ? Commons.Color.menu.selectedText : Commons.Color.menu.text
                 opacity: 0.66
-                font.family: Style.font.menuFamily
-                font.pixelSize: Style.font.caption
+                font.family: Commons.Style.font.menuFamily
+                font.pixelSize: Commons.Style.font.caption
               }
 
               MouseArea {
@@ -287,36 +290,37 @@ Item {
           visible: root.filtered.length === 0
           text: listProcess.running ? "正在读取语言…" : (root.loadError || "没有匹配的语言")
           textFormat: Text.PlainText
-          color: root.loadError ? Color.urgent : Color.menu.text
+          color: root.loadError ? Commons.Color.urgent : Commons.Color.menu.text
           opacity: 0.65
-          font.family: Style.font.menuFamily
-          font.pixelSize: Style.font.body
+          font.family: Commons.Style.font.menuFamily
+          font.pixelSize: Commons.Style.font.body
         }
       }
 
       Rectangle {
         id: notice
+        objectName: "languageSwitcherNotice"
         anchors.centerIn: parent
         visible: root.noticeVisible && !root.opened
-        width: Math.min(Style.space(470), panel.width - Style.gapsOut * 2)
-        height: Style.space(100)
-        radius: Style.cornerRadius
-        color: Color.menu.background
-        border.color: root.noticeError ? Color.urgent : Color.menu.border
+        width: Math.min(Commons.Style.space(470), panel.width - Commons.Style.gapsOut * 2)
+        height: Commons.Style.space(100)
+        radius: Commons.Style.cornerRadius
+        color: Commons.Color.menu.background
+        border.color: root.noticeError ? Commons.Color.urgent : Commons.Color.menu.border
         border.width: 1
 
         Column {
           anchors.centerIn: parent
-          width: parent.width - Style.spacing.panelPadding * 2
-          spacing: Style.spacing.sm
+          width: parent.width - Commons.Style.spacing.panelPadding * 2
+          spacing: Commons.Style.spacing.sm
           Text {
             width: parent.width
             text: root.noticeError ? "切换失败" : (root.busy ? "正在处理" : "切换完成")
             textFormat: Text.PlainText
             horizontalAlignment: Text.AlignHCenter
-            color: root.noticeError ? Color.urgent : Color.menu.text
-            font.family: Style.font.menuFamily
-            font.pixelSize: Style.font.title
+            color: root.noticeError ? Commons.Color.urgent : Commons.Color.menu.text
+            font.family: Commons.Style.font.menuFamily
+            font.pixelSize: Commons.Style.font.title
             font.bold: true
           }
           Text {
@@ -324,9 +328,9 @@ Item {
             text: root.noticeMessage
             textFormat: Text.PlainText
             horizontalAlignment: Text.AlignHCenter
-            color: Color.menu.text
-            font.family: Style.font.menuFamily
-            font.pixelSize: Style.font.body
+            color: Commons.Color.menu.text
+            font.family: Commons.Style.font.menuFamily
+            font.pixelSize: Commons.Style.font.body
             elide: Text.ElideRight
           }
         }
