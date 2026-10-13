@@ -1,4 +1,4 @@
-"""Check live dialog theme bindings without reloading displays or changing locales."""
+"""Check search lifecycle and dialog themes without changing system locales."""
 import os
 from pathlib import Path
 import re
@@ -38,7 +38,7 @@ def main():
         if result.returncode or "PLUGIN_THEME_PASS" not in output or re.search(
                 r"PLUGIN_THEME_FAIL|TypeError|ReferenceError|Unable to assign|ERROR:|Cannot read property", output):
             raise SystemExit(output)
-        print("PASS: actual dialog colors follow dark/light theme changes")
+        print("PASS: search lifecycle and actual dialog dark/light theme bindings")
 
 
 if __name__ == '__main__':

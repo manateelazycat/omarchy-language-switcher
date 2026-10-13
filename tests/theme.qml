@@ -9,6 +9,42 @@ ShellRoot {
     Plugin.Service { id: service }
     TestCase { id: checks; when: false }
     function check(value, message) { if (!value) throw new Error(message); }
+    function verifySearchLifetime() {
+        var panels = service.themeTestPanels.instances;
+        check(panels.length > 0, "No screens available for search lifecycle checks");
+        for (var cycle = 0; cycle < 3; cycle++) {
+            service.targetScreenName = panels[0].modelData.name;
+            service.query = "";
+            service.opened = true;
+            checks.wait(30);
+            for (var i = 0; i < panels.length; i++) {
+                var field = checks.findChild(panels[i].contentItem, "languageSwitcherSearch");
+                check(!!field === (i === 0), "Search must exist only on the target screen");
+            }
+            service.query = "English";
+            checks.wait(30);
+            check(checks.findChild(panels[0].contentItem, "languageSwitcherSearch").text === "English",
+                  "Search query binding after reopening");
+            service.close();
+            service.noticeVisible = true;
+            checks.wait(30);
+            for (var j = 0; j < panels.length; j++) {
+                check(!checks.findChild(panels[j].contentItem, "languageSwitcherSearch"),
+                      "Closed dialog must destroy its search, including while showing a notice");
+            }
+        }
+        service.opened = true;
+        service.targetScreenName = "__missing_test_screen__";
+        checks.wait(30);
+        for (var k = 0; k < panels.length; k++) {
+            check(!checks.findChild(panels[k].contentItem, "languageSwitcherSearch"),
+                  "Non-target screens must not create a search");
+        }
+        service.targetScreenName = panels[0].modelData.name;
+        service.query = "";
+        service.noticeVisible = false;
+        checks.wait(30);
+    }
     function verifyTheme() {
         var card = checks.findChild(service.themeTestPanels.instances[0].contentItem, "languageSwitcherCard");
         var search = checks.findChild(service.themeTestPanels.instances[0].contentItem, "languageSwitcherSearch");
@@ -31,6 +67,7 @@ ShellRoot {
         interval: 250; running: true
         onTriggered: {
             try {
+                verifySearchLifetime();
                 service.filtered = [{code: "en_US.UTF-8", title: "English", subtitle: "English", active: true, installed: true}];
                 checks.wait(30);
                 verifyTheme();

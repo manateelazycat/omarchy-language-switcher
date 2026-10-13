@@ -137,10 +137,14 @@ Item {
       WlrLayershell.layer: WlrLayer.Overlay
       WlrLayershell.keyboardFocus: panel.visible && root.opened ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
       anchors { top: true; bottom: true; left: true; right: true }
-      onVisibleChanged: if (visible && root.opened) Qt.callLater(function() {
-        resultList.positionViewAtIndex(root.selectedIndex, ListView.Contain)
-        searchField.forceActiveFocus()
-      })
+      function focusSearch() {
+        Qt.callLater(function() {
+          if (!panel.visible || !root.opened || !searchLoader.item) return
+          resultList.positionViewAtIndex(root.selectedIndex, ListView.Contain)
+          searchLoader.item.forceActiveFocus()
+        })
+      }
+      onVisibleChanged: if (visible && root.opened) focusSearch()
 
       Rectangle {
         id: scrim
@@ -178,23 +182,32 @@ Item {
             font.bold: true
           }
 
-          LanguageUi.TextField {
-            id: searchField
-            objectName: "languageSwitcherSearch"
+          // Hidden editable inputs still react to clipboard changes in Qt.
+          // Keep one search field alive only while its screen's dialog is open.
+          Loader {
+            id: searchLoader
             width: parent.width
-            text: root.query
-            placeholderText: "搜索语言名称或 locale 代码…"
-            onTextEdited: root.query = text
-            Keys.priority: Keys.BeforeItem
-            Keys.onPressed: function(event) {
-              if (event.key === Qt.Key_Escape) { root.close(); event.accepted = true }
-              else if (event.key === Qt.Key_Down) { root.moveSelection(1); event.accepted = true }
-              else if (event.key === Qt.Key_Up) { root.moveSelection(-1); event.accepted = true }
-              else if (event.key === Qt.Key_PageDown) { root.moveSelection(6); event.accepted = true }
-              else if (event.key === Qt.Key_PageUp) { root.moveSelection(-6); event.accepted = true }
-              else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                root.select(root.selectedIndex)
-                event.accepted = true
+            height: item ? item.implicitHeight : 0
+            active: root.opened && panel.modelData.name === root.targetScreenName
+            focus: true
+            onLoaded: panel.focusSearch()
+
+            sourceComponent: LanguageUi.TextField {
+              objectName: "languageSwitcherSearch"
+              text: root.query
+              placeholderText: "搜索语言名称或 locale 代码…"
+              onTextEdited: root.query = text
+              Keys.priority: Keys.BeforeItem
+              Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) { root.close(); event.accepted = true }
+                else if (event.key === Qt.Key_Down) { root.moveSelection(1); event.accepted = true }
+                else if (event.key === Qt.Key_Up) { root.moveSelection(-1); event.accepted = true }
+                else if (event.key === Qt.Key_PageDown) { root.moveSelection(6); event.accepted = true }
+                else if (event.key === Qt.Key_PageUp) { root.moveSelection(-6); event.accepted = true }
+                else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                  root.select(root.selectedIndex)
+                  event.accepted = true
+                }
               }
             }
           }
