@@ -30,6 +30,8 @@ cd omarchy-language-switcher
 
 点击任务栏语言图标，或运行 `omarchy-shell andy.language-switcher show` 打开搜索框。用 `↑`、`↓` 选择，按 `Enter` 切换；按 `Esc` 关闭。
 
+搜索框支持输入法、文本选区、撤销和重做，以及 `Ctrl+V`、`Shift+Insert`、右键菜单和鼠标中键（主选区）粘贴。只有主动粘贴时才会在独立进程中读取剪贴板，限制为 4 KiB 和 1 秒总耗时。超大、未完成或无效 UTF-8 传输不会修改搜索内容；换行和制表符转换为空格。继续编辑或关闭窗口会取消未完成的粘贴。
+
 ## 卸载
 
 ```bash
@@ -40,7 +42,19 @@ cd omarchy-language-switcher
 
 ## 运行要求
 
-Omarchy Shell、Hyprland、Python 3、`locale-gen`、`localectl`、`pkexec`、`sudo`，以及可用的 Polkit 图形授权代理。安装脚本还使用 `jq`。语言资源是否完整取决于已安装的软件翻译包。
+Omarchy Shell、Hyprland、Python 3、`wl-clipboard` 和 GNU coreutils（用于粘贴）、`locale-gen`、`localectl`、`pkexec`、`sudo`，以及可用的 Polkit 图形授权代理。安装脚本还使用 `jq`。语言资源是否完整取决于已安装的软件翻译包。
+
+## 开发检查
+
+```bash
+python -m unittest discover -s tests -p 'test_*.py'
+bash tests/test_helper_installation.sh
+python tests/check_theme.py
+python tests/check_search.py
+omarchy plugin validate .
+```
+
+主题检查需要运行中的 Wayland 会话。搜索检查使用 Qt 离屏平台和仅用于测试的 C++ 探针，需要 C++ 编译器、`pkg-config` 和 Qt 6 开发工具；它验证实际控件的剪贴板访问、键盘和输入法事件、编辑、滚动、粘贴入口及取消行为，不读取桌面剪贴板，也不修改系统语言。剪贴板读取测试使用临时进程验证大小限制、停滞和持续传输、总超时及进程清理。
 
 ## 协议
 

@@ -37,6 +37,8 @@ If the helper path already exists without a matching receipt, installation stops
 
 Click the language icon in the bar or run `omarchy-shell andy.language-switcher show`. Use `↑` and `↓` to select a language, `Enter` to switch, and `Esc` to close the dialog.
 
+The search supports input methods, text selection, undo/redo, and pasting with `Ctrl+V`, `Shift+Insert`, the context menu, or the middle mouse button (primary selection). Clipboard text is read only when you request a paste, in a separate process limited to 4 KiB and one second. Larger, incomplete, or invalid UTF-8 transfers leave the query unchanged. Line breaks and tabs become spaces. Editing or closing the dialog cancels an unfinished paste.
+
 ## Remove
 
 ```bash
@@ -47,7 +49,19 @@ The uninstaller removes the Omarchy plugin link and uses `sudo` to remove the ro
 
 ## Requirements
 
-Omarchy Shell, Hyprland, Python 3, `locale-gen`, `localectl`, `pkexec`, `sudo`, and a graphical Polkit authentication agent. The installer also uses `jq`. Available translations depend on the language packs installed on your system.
+Omarchy Shell, Hyprland, Python 3, `wl-clipboard` and GNU coreutils (for pasting), `locale-gen`, `localectl`, `pkexec`, `sudo`, and a graphical Polkit authentication agent. The installer also uses `jq`. Available translations depend on the language packs installed on your system.
+
+## Development checks
+
+```bash
+python -m unittest discover -s tests -p 'test_*.py'
+bash tests/test_helper_installation.sh
+python tests/check_theme.py
+python tests/check_search.py
+omarchy plugin validate .
+```
+
+The theme check needs a running Wayland session. The search check uses Qt's offscreen platform and a test-only C++ probe (requires a C++ compiler, `pkg-config`, and Qt 6 development tools). It checks the real control's clipboard access, keyboard/IME events, editing, scrolling, paste entry points, and cancellation without accessing your desktop clipboard or changing the system locale. Clipboard reader tests use disposable producers to check size limits, stalled and continuous transfers, overall deadlines, and process cleanup.
 
 ## License
 

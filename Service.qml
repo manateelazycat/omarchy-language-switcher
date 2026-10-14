@@ -182,8 +182,7 @@ Item {
             font.bold: true
           }
 
-          // Hidden editable inputs still react to clipboard changes in Qt.
-          // Keep one search field alive only while its screen's dialog is open.
+          // Destroy the search and cancel pending paste when its dialog closes.
           Loader {
             id: searchLoader
             width: parent.width
@@ -192,13 +191,18 @@ Item {
             focus: true
             onLoaded: panel.focusSearch()
 
-            sourceComponent: LanguageUi.TextField {
+            sourceComponent: LanguageUi.SearchField {
               objectName: "languageSwitcherSearch"
               text: root.query
               placeholderText: "搜索语言名称或 locale 代码…"
-              onTextEdited: root.query = text
-              Keys.priority: Keys.BeforeItem
-              Keys.onPressed: function(event) {
+              onTextChanged: if (root.query !== text) root.query = text
+              onPasteFailed: function(reason) {
+                var message = reason === "too-large" ? "剪贴板文本超过 4 KiB，未粘贴" :
+                              reason === "timeout" ? "读取剪贴板超时，请重试" :
+                              reason === "invalid-text" ? "剪贴板不是有效的 UTF-8 文本" : "无法读取剪贴板文本"
+                root.showNotice(message, true, true)
+              }
+              onNavigationRequested: function(event) {
                 if (event.key === Qt.Key_Escape) { root.close(); event.accepted = true }
                 else if (event.key === Qt.Key_Down) { root.moveSelection(1); event.accepted = true }
                 else if (event.key === Qt.Key_Up) { root.moveSelection(-1); event.accepted = true }

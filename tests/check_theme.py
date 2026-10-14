@@ -13,7 +13,7 @@ def main():
         root = Path(directory)
         plugin = root / "Plugin"
         plugin.mkdir()
-        for path in (*source.glob("*.qml"), *source.glob("*.js")):
+        for path in (*source.glob("*.qml"), *source.glob("*.js"), source / "clipboard_helper.py"):
             shutil.copy2(path, plugin / path.name)
         service = plugin / "Service.qml"
         text = service.read_text()
@@ -38,7 +38,7 @@ def main():
         if result.returncode or "PLUGIN_THEME_PASS" not in output or re.search(
                 r"PLUGIN_THEME_FAIL|TypeError|ReferenceError|Unable to assign|ERROR:|Cannot read property", output):
             raise SystemExit(output)
-        print("PASS: search lifecycle and actual dialog dark/light theme bindings")
+        print("PASS: search/filter/navigation integration, lifecycle, and actual dialog dark/light themes")
 
 
 if __name__ == '__main__':
